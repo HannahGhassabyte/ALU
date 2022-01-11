@@ -1,39 +1,64 @@
-module part3(A, B, Function, ALUout); 
-
-	input [3:0] A; 
-	input [3:0] B; 
-	input [2:0] Function; 
-	output reg [7:0] ALUout;
-	wire [4:0] adder; 
+module part2(Clock, Reset_b, Data, Function, ALUout);
 	
-	part2 u1(A, B, 0, adder[3:0], adder[4]);
+	input Clock, Reset_b; 
+	input [2:0] Function; 
+	input [3:0] Data;
+	
+	output [7:0] ALUout;
+	reg [7:0] temp; 
+	reg [7:0] aOut;
+	 
+	wire [3:0] A; 
+	wire [3:0] B;
+	wire [4:0] adderOut; 
+	
+	always @(posedge Clock) 
+	begin 
+		if (Reset_b == 1'b0) 
+			temp <= 8'b0; 
+		else 
+			temp <= aOut;
+	end
+	
+	assign ALUout = temp;
+	assign A = Data; 
+	assign B = ALUout[3:0];
+	
+	Adder u0(A, B, 0, adderOut[3:0], adderOut[4]);
 	
 	always @(*)
 	begin 
-		case(Function) 
-			3'b000: ALUout = adder; 
-			3'b001: ALUout = A+B; 
-			3'b010: ALUout = {{4{B[3]}}, B}; //check this later
-			3'b011: ALUout = A||B; 
-			3'b100: ALUout = &{A,B}; 
-			3'b101: ALUout = {A,B};
-			default: ALUout = 8'b00000000;
+		case(Function)
+			3'b000: aOut = adderOut; 
+			3'b001: aOut = A + B;
+			3'b010: aOut = {{4{B[3]}}, B};
+			3'b011: aOut = A||B;
+			3'b100: aOut = &{A,B};
+			3'b101: aOut = B << A;  
+			3'b110: aOut = A*B;
+			3'b111: aOut = ALUout;
+			default: aOut = 8'b0;
 		endcase 
-	end 
+	end
+	
+
+	
 endmodule 
 			
-module part2(a, b, c_in, s, c_out);
+
+module Adder(a, b, c_in, s, c_out);
 
 	input [3:0]a; 
 	input [3:0]b;
 	input c_in;
 	output [3:0]s; 
-	output [3:0]c_out;
+	wire [2:0] c;
+	output c_out;
 
-	FullAdder u1(c_in, a[0], b[0], c_out[0], s[0]);
-	FullAdder u2(c_out[0], a[1], b[1], c_out[1], s[1]);
-	FullAdder u3(c_out[1], a[2], b[2], c_out[2], s[2]);
-	FullAdder u4(c_out[2], a[3], b[3], c_out[3], s[3]);
+	FullAdder u1(c_in, a[0], b[0], c[0], s[0]);
+	FullAdder u2(c[0], a[1], b[1], c[1], s[1]);
+	FullAdder u3(c[1], a[2], b[2], c[2], s[2]);
+	FullAdder u4(c[2], a[3], b[3], c_out, s[3]);
 	
 endmodule 
 
