@@ -1,0 +1,48 @@
+module part3(A, B, Function, ALUout); 
+
+	input [3:0] A; 
+	input [3:0] B; 
+	input [2:0] Function; 
+	output reg [7:0] ALUout;
+	wire [4:0] adder; 
+	
+	part2 u1(A, B, 0, adder[3:0], adder[4]);
+	
+	always @(*)
+	begin 
+		case(Function) 
+			3'b000: ALUout = adder; 
+			3'b001: ALUout = A+B; 
+			3'b010: ALUout = {{4{B[3]}}, B}; //check this later
+			3'b011: ALUout = A||B; 
+			3'b100: ALUout = &{A,B}; 
+			3'b101: ALUout = {A,B};
+			default: ALUout = 8'b00000000;
+		endcase 
+	end 
+endmodule 
+			
+module part2(a, b, c_in, s, c_out);
+
+	input [3:0]a; 
+	input [3:0]b;
+	input c_in;
+	output [3:0]s; 
+	output [3:0]c_out;
+
+	FullAdder u1(c_in, a[0], b[0], c_out[0], s[0]);
+	FullAdder u2(c_out[0], a[1], b[1], c_out[1], s[1]);
+	FullAdder u3(c_out[1], a[2], b[2], c_out[2], s[2]);
+	FullAdder u4(c_out[2], a[3], b[3], c_out[3], s[3]);
+	
+endmodule 
+
+module FullAdder(cin, a, b, cout, s);
+ 
+	input a,b,cin; 
+	output s, cout; 
+	
+	assign s = cin^a^b; 
+	assign cout = (a&b)|(cin&a)|(cin&b);
+
+endmodule
